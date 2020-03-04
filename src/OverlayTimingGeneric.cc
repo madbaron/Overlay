@@ -55,6 +55,11 @@ OverlayTimingGeneric::OverlayTimingGeneric(): OverlayTiming("OverlayTimingGeneri
                               _Poisson,
                               bool(false) );
 
+registerProcessorParameter( "MergeMCParticles", 
+                           "Merge the MC Particle collections",
+                           _mergeMCParticles,
+                           bool(true) );
+
   registerProcessorParameter("MCParticleCollectionName",
                              "The MC Particle Collection Name",
                              _mcParticleCollectionName,

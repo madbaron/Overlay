@@ -138,6 +138,7 @@ namespace overlay {
     float this_start = -0.25;
     float this_stop = std::numeric_limits<float>::max();
 
+    bool _mergeMCParticles = true;
     std::string _mcParticleCollectionName = "";
     std::string _mcPhysicsParticleCollectionName = "";
     std::string currentDest = "";
