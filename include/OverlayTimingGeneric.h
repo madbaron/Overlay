@@ -35,6 +35,8 @@ protected:
   std::vector<std::string> _collectionTimesVec{"BeamCalCollection", "10"};
   std::map< std::string, float > _collectionIntegrationTimes{};
 
+  bool _symmetricTimeWindows = false;
+
 };
 
 inline marlin::Processor *OverlayTimingGeneric::newProcessor()

@@ -25,40 +25,40 @@ OverlayTimingGeneric::OverlayTimingGeneric(): OverlayTiming("OverlayTimingGeneri
                              _nBunchTrain,
                              int(1));
 
-  registerProcessorParameter( "BackgroundFileNames",
-                              "Name of the lcio input file(s) with background - assume one file per bunch crossing.",
-                              _inputFileNames,
-                              files);
+  registerProcessorParameter("BackgroundFileNames",
+                             "Name of the lcio input file(s) with background - assume one file per bunch crossing.",
+                             _inputFileNames,
+                             files);
 
   registerProcessorParameter("PhysicsBX",
                              "Number of the Bunch crossing of the physics event",
                              _BX_phys,
                              int(1));
 
-  registerProcessorParameter( "TPCDriftvelocity",
-                              "[mm/ns] (float) - default 5.0e-2 (5cm/us)",
-                              _tpcVdrift_mm_ns,
-                              float(5.0e-2) );
+  registerProcessorParameter("TPCDriftvelocity",
+                             "[mm/ns] (float) - default 5.0e-2 (5cm/us)",
+                             _tpcVdrift_mm_ns,
+                             float(5.0e-2) );
 
-  registerProcessorParameter( "RandomBx",
-                              "Place the physics event at an random position in the train: overrides PhysicsBX",
-                              _randomBX,
-                              bool(false) );
+  registerProcessorParameter("RandomBx",
+                             "Place the physics event at an random position in the train: overrides PhysicsBX",
+                             _randomBX,
+                             bool(false) );
 
-  registerProcessorParameter( "NumberBackground",
-                              "Number of Background events to overlay - either fixed or Poisson mean",
-                              _NOverlay,
-                              float(1) );
+  registerProcessorParameter("NumberBackground",
+                             "Number of Background events to overlay - either fixed or Poisson mean",
+                             _NOverlay,
+                             float(1) );
 
-  registerProcessorParameter( "Poisson_random_NOverlay",
-                              "Draw random number of Events to overlay from Poisson distribution with  mean value NumberBackground",
-                              _Poisson,
-                              bool(false) );
+  registerProcessorParameter("Poisson_random_NOverlay",
+                             "Draw random number of Events to overlay from Poisson distribution with  mean value NumberBackground",
+                             _Poisson,
+                             bool(false) );
 
-registerProcessorParameter( "MergeMCParticles", 
-                           "Merge the MC Particle collections",
-                           _mergeMCParticles,
-                           bool(true) );
+  registerProcessorParameter("MergeMCParticles", 
+                             "Merge the MC Particle collections",
+                             _mergeMCParticles,
+                             bool(true) );
 
   registerProcessorParameter("MCParticleCollectionName",
                              "The MC Particle Collection Name",
@@ -76,20 +76,25 @@ registerProcessorParameter( "MergeMCParticles",
                              _collectionTimesVec,
                              _collectionTimesVec);
 
+  registerProcessorParameter("SymmetricIntegrationTimes", 
+                             "Make the integration times symmetric around 0",
+                             _symmetricTimeWindows,
+                             bool(false) );
+
   registerProcessorParameter("AllowReusingBackgroundFiles",
                              "If true the same background file can be used for the same event",
                              m_allowReusingBackgroundFiles,
                              m_allowReusingBackgroundFiles);
 
-    registerOptionalParameter("StartBackgroundFileIndex",
-			       "Which background file to startWith",
-			       m_startWithBackgroundFile,
-			       m_startWithBackgroundFile);
+  registerOptionalParameter("StartBackgroundFileIndex",
+                            "Which background file to startWith",
+                            m_startWithBackgroundFile,
+                            m_startWithBackgroundFile);
 
-    registerOptionalParameter("StartBackgroundEventIndex",
-			       "Which background event to startWith",
-			       m_startWithBackgroundEvent,
-			       m_startWithBackgroundEvent);
+  registerOptionalParameter("StartBackgroundEventIndex",
+                            "Which background event to startWith",
+                            m_startWithBackgroundEvent,
+                            m_startWithBackgroundEvent);
 
     registerProcessorParameter("Start_Integration_Time",
                                "Starting integration time.  Should be shortly before the BX, but may need to be shifted earlier if the vertex is smeared in time.",
@@ -142,6 +147,10 @@ void OverlayTimingGeneric::define_time_windows( std::string const& collectionNam
   auto iter = _collectionIntegrationTimes.find( collectionName );
   if ( iter != _collectionIntegrationTimes.end() ) {
     this_stop = iter->second;
+    // Making the time window symmetric around 0
+    if ( _symmetricTimeWindows ) {
+      this_start = -this_stop;
+    }
   } else {
     throw std::runtime_error( "Cannot find integration time for collection " + collectionName );
   }
