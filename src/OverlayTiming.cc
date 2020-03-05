@@ -365,7 +365,13 @@ namespace overlay {
         currentDest = Collection_name;
         if ((Collection_in_Physics_Evt->getTypeName() == LCIO::SIMCALORIMETERHIT) || (Collection_in_Physics_Evt->getTypeName() == LCIO::SIMTRACKERHIT))
           {
-            define_time_windows(Collection_name);
+            try {
+              define_time_windows(Collection_name);
+            } 
+            catch (std::runtime_error& e) {
+              streamlog_out(DEBUG) << "Skipping collection without integration times: " << Collection_name << std::endl;
+              continue;
+            }
             streamlog_out(DEBUG) << "Cropping collection: " << Collection_name << std::endl;
             crop_collection(Collection_in_Physics_Evt);
           }
@@ -471,7 +477,12 @@ namespace overlay {
                       continue;
                     }
 
-                    define_time_windows(Collection_name);
+                    try {
+                      define_time_windows(Collection_name);
+                    } 
+                    catch (std::runtime_error& e) {
+                      continue;
+                    }
 
                     //the event can only make contributions to the readout, if the bx does not happen after the integration time stopped.
                     //and we are only interested in Calorimeter or Trackerhits.
