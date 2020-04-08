@@ -76,10 +76,10 @@ OverlayTimingGeneric::OverlayTimingGeneric(): OverlayTiming("OverlayTimingGeneri
                              _collectionTimesVec,
                              _collectionTimesVec);
 
-  registerProcessorParameter("SymmetricIntegrationTimes", 
-                             "Make the integration times symmetric around 0",
-                             _symmetricTimeWindows,
-                             bool(false) );
+  registerProcessorParameter("IntegrationTimeMin", 
+                             "Lower border of the integration time window for all collections",
+                             _integrationTimeMin,
+                             float(-0.25) );
 
   registerProcessorParameter("AllowReusingBackgroundFiles",
                              "If true the same background file can be used for the same event",
@@ -119,17 +119,36 @@ void OverlayTimingGeneric::init()
   _nEvt = 0;
 
 
-  if( _collectionTimesVec.size() % 2 != 0 ){
-    std::runtime_error( "bad entries for parameter 'Collection_Integration Times! Need pairs of collection and integration times");
-  }
-
   // parse the collectionTimesVec vector to get the collections and integration times
-  for (size_t i = 0; i < _collectionTimesVec.size(); i+=2 ) {
-    _collectionIntegrationTimes[ _collectionTimesVec[i] ] = std::atof( _collectionTimesVec[i+1].c_str() );
+  std::string key;
+  float value, low, high;
+  size_t keyIndex = 0;
+  for (size_t i = 0; i < _collectionTimesVec.size(); i++ ) {
+    std::string str = _collectionTimesVec.at(i);
+    if (str.find_first_not_of("-+.0123456789") != std::string::npos) {
+      // Extracting the collection name
+      key = str;
+      keyIndex = i;
+    } 
+    else {
+      // Extracting the 1 or 2 time values
+      value = std::atof( str.c_str() );
+      if (i - keyIndex == 1) {
+        low = _integrationTimeMin;
+        high = value;
+      } else 
+      if (i - keyIndex == 2) {
+        low = high;
+        high = value;
+      }
+      // Storing the time values for the last collection name to the map
+      _collectionIntegrationTimes[key] = std::pair<float, float>(low, high);
+    } 
   }
 
+  streamlog_out(MESSAGE) << "Collection integration times:" << std::endl;
   for (auto const& entry : _collectionIntegrationTimes) {
-    streamlog_out(MESSAGE) << entry.first << ": " << entry.second  << std::endl;
+    streamlog_out(MESSAGE) << "  " << entry.first << ": " << entry.second.first << " -> " << entry.second.second << std::endl;
   }
 
 
@@ -139,18 +158,14 @@ void OverlayTimingGeneric::init()
 
 void OverlayTimingGeneric::define_time_windows( std::string const& collectionName ) {
 
-  this_start= _DefaultStart_int;
-
+  this_start = _integrationTimeMin;
   this_stop= 0.0;
   TPC_hits = false;
 
   auto iter = _collectionIntegrationTimes.find( collectionName );
   if ( iter != _collectionIntegrationTimes.end() ) {
-    this_stop = iter->second;
-    // Making the time window symmetric around 0
-    if ( _symmetricTimeWindows ) {
-      this_start = -this_stop;
-    }
+    this_start = iter->second.first;
+    this_stop = iter->second.second;
   } else {
     throw std::runtime_error( "Cannot find integration time for collection " + collectionName );
   }

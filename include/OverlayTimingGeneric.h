@@ -33,9 +33,9 @@ protected:
 
   virtual void define_time_windows(const std::string &collectionName);
   std::vector<std::string> _collectionTimesVec{"BeamCalCollection", "10"};
-  std::map< std::string, float > _collectionIntegrationTimes{};
+  std::map< std::string, std::pair<float, float> > _collectionIntegrationTimes{};
 
-  bool _symmetricTimeWindows = false;
+  float _integrationTimeMin = -0.25;
 
 };
 
