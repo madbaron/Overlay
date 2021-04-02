@@ -21,7 +21,7 @@ SET( ${PROJECT_NAME}_VERSION_PATCH 1 )
 FIND_PACKAGE( ILCUTIL REQUIRED COMPONENTS ILCSOFT_CMAKE_MODULES )
 
 # load default settings from ILCSOFT_CMAKE_MODULES
-INCLUDE( ilcsoft_default_settings )
+#INCLUDE( ilcsoft_default_settings )
 
 
 FIND_PACKAGE( Marlin 1.0 REQUIRED ) # minimum required Marlin version
