@@ -724,7 +724,7 @@ namespace overlay {
           }
         else if (source_collection->getTypeName() == LCIO::SIMTRACKERHIT) {
           //If truth is removed in the overlay, we need to remove the pointer since it will become invalid
-          if (_mergeMCParticles) {
+          if (not _mergeMCParticles) {
             for (int k = 0; k < number_of_elements; ++k) 
             {
               SimTrackerHitImpl *TrackerHit = static_cast<SimTrackerHitImpl*>(source_collection->getElementAt(k));
