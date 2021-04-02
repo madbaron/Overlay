@@ -722,11 +722,30 @@ namespace overlay {
                 source_collection->removeElementAt(i);
               }
           }
-        else if ((source_collection->getTypeName() == LCIO::SIMTRACKERHIT) && ((std::fabs(time_offset) < std::numeric_limits<float>::epsilon()) || !TPC_hits))
+        else if (source_collection->getTypeName() == LCIO::SIMTRACKERHIT) {
+          //If truth is removed in the overlay, we need to remove the pointer since it will become invalid
+          if (_mergeMCParticles) {
+            for (int k = 0; k < number_of_elements; ++k) 
+            {
+              SimTrackerHitImpl *TrackerHit = static_cast<SimTrackerHitImpl*>(source_collection->getElementAt(k));
+              EVENT::MCParticle *mcParticle = TrackerHit->getMCParticle();
+              //if a valida pointer exists, keep momentum information
+              if (mcParticle) {
+                const double *preserveMomentum = mcParticle->getMomentum();
+                TrackerHit->setMomentum(preserveMomentum[0], preserveMomentum[1], preserveMomentum[2]);
+              }
+              TrackerHit->setMCParticle(nullptr);
+            }
+          }
+          //Adjust timing information on hits depending on BX and set overlay flag
+          if ((std::fabs(time_offset) < std::numeric_limits<float>::epsilon()) || !TPC_hits)
           {
             for (int k = number_of_elements - 1; k >= 0; --k)
               {
                 SimTrackerHitImpl *TrackerHit = static_cast<SimTrackerHitImpl*>(source_collection->getElementAt(k));
+
+                TrackerHit->setOverlay(true);
+
                 const float _time_of_flight = time_of_flight(TrackerHit->getPosition()[0], TrackerHit->getPosition()[1], TrackerHit->getPosition()[2]);
 
                 if (((TrackerHit->getTime() + time_offset) > (this_start + _time_of_flight)) && ((TrackerHit->getTime() + time_offset) < (this_stop + _time_of_flight)))
@@ -738,7 +757,7 @@ namespace overlay {
                   }
               }
           }
-        else if ((source_collection->getTypeName() == LCIO::SIMTRACKERHIT) && TPC_hits)
+          else if (TPC_hits)
           {
             for (int k = number_of_elements - 1; k >= 0; --k) 
               {
@@ -764,6 +783,7 @@ namespace overlay {
                   }
               }
           }
+        }
         else if (source_collection->getTypeName() == LCIO::SIMCALORIMETERHIT)
           {
             // create a map of dest Collection
