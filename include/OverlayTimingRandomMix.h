@@ -78,6 +78,10 @@ namespace overlay
 
     unsigned int _nRun = 0;
     unsigned int _nEvt = 0;
+
+    std::string _pathToMuMinus = "";
+    std::string _pathToMuPlus = "";
+
     StringVec _inputFileNamesMuPlus{};
     StringVec _inputFileNamesMuMinus{};
 
@@ -89,14 +93,11 @@ namespace overlay
 
     IO::LCReader *overlay_Eventfile_reader = NULL;
     LCEvent *overlay_Evt = nullptr;
-    int m_eventCounter = 0;
-    int m_currentFileIndex = 0;
 
     float this_start = -0.25;
     float this_stop = std::numeric_limits<float>::max();
-    bool TPC_hits = false;
 
-    bool _mergeMCParticles = true;
+    bool _mergeMCParticles = false;
     std::string _mcParticleCollectionName = "";
     std::string currentDest = "";
 
