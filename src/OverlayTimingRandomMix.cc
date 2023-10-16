@@ -23,9 +23,29 @@
 #include <random>
 #include <set>
 #include <iterator>
+#include <filesystem>
 
 using namespace lcio;
 using namespace marlin;
+namespace fs = std::filesystem;
+
+void listFilesInFolder(const std::string &folderPath, StringVec &files)
+{
+  try
+  {
+    for (const auto &entry : fs::directory_iterator(folderPath))
+    {
+      if (fs::is_regular_file(entry.path()))
+      {
+        files.push_back(entry.path().string());
+      }
+    }
+  }
+  catch (const std::exception &ex)
+  {
+    std::cerr << "Error: " << ex.what() << std::endl;
+  }
+}
 
 namespace overlay
 {
@@ -41,18 +61,15 @@ namespace overlay
     // modify processor description
     _description = "Processor to overlay events from the background taking the timing of the subdetectors into account";
 
-    StringVec filesMuPlus;
-    StringVec filesMuMinus;
+    registerProcessorParameter("PathToMuPlus",
+                               "Path to the fluka lcio input file(s)",
+                               _pathToMuPlus,
+                               std::string("/data/BIB10TeV/sim_mp"));
 
-    registerProcessorParameter("BackgroundFileNamesMuPlus",
-                               "Name of the lcio input file(s) with background.",
-                               _inputFileNamesMuPlus,
-                               filesMuPlus);
-
-    registerProcessorParameter("BackgroundFileNamesMuMinus",
-                               "Name of the lcio input file(s) with background.",
-                               _inputFileNamesMuMinus,
-                               filesMuMinus);
+    registerProcessorParameter("PathToMuMinus",
+                               "Path to the fluka lcio input file(s)",
+                               _pathToMuMinus,
+                               std::string("/data/BIB10TeV/sim_mp"));
 
     registerProcessorParameter("NumberBackground",
                                "Number of Background events to overlay",
@@ -87,10 +104,6 @@ namespace overlay
     printParameters();
 
     overlay_Eventfile_reader = LCFactory::getInstance()->createLCReader();
-
-    streamlog_out(WARNING) << "Attention! There are " << _inputFileNamesMuPlus.size() << " " << _inputFileNamesMuMinus.size()
-                           << " files in the list of mu plus (minus) background files to overlay. Make sure that each background file list is equal or greater to NumberBackground!!"
-                           << std::endl;
 
     marlin::Global::EVENTSEEDER->registerProcessor(this);
 
@@ -127,6 +140,17 @@ namespace overlay
         // Storing the time values for the last collection name to the map
         _collectionIntegrationTimes[key] = std::pair<float, float>(low, high);
       }
+    }
+
+    // Getting the list of files from the paths
+    listFilesInFolder(_pathToMuMinus, _inputFileNamesMuMinus);
+    listFilesInFolder(_pathToMuPlus, _inputFileNamesMuPlus);
+
+    if ((_NOverlay > _inputFileNamesMuPlus.size()) || (_NOverlay > _inputFileNamesMuMinus.size()))
+    {
+      streamlog_out(WARNING) << "Attention! There are " << _inputFileNamesMuPlus.size() << " (" << _inputFileNamesMuMinus.size()
+                             << ") files in the list of mu plus (minus) background files to overlay. Make sure that each background file list is equal or greater to NumberBackground!!"
+                             << std::endl;
     }
 
     streamlog_out(MESSAGE) << "Collection integration times:" << std::endl;
@@ -303,7 +327,7 @@ namespace overlay
       for (int k = 0; k < _NOverlay; ++k)
       {
         overlay_Eventfile_reader->open(_inputFileNamesMuMinus.at(v_file_indices_mumi[k]));
-        streamlog_out(MESSAGE) << "Open mu plus background file: " << _inputFileNamesMuMinus.at(v_file_indices_mumi[k]) << std::endl;
+        streamlog_out(MESSAGE) << "Open mu minus background file: " << _inputFileNamesMuMinus.at(v_file_indices_mumi[k]) << std::endl;
 
         overlay_Evt = overlay_Eventfile_reader->readNextEvent(LCIO::UPDATE);
 
@@ -393,7 +417,6 @@ namespace overlay
 
     this_start = _integrationTimeMin;
     this_stop = 0.0;
-    TPC_hits = false;
 
     auto iter = _collectionIntegrationTimes.find(collectionName);
     if (iter != _collectionIntegrationTimes.end())
@@ -528,22 +551,19 @@ namespace overlay
           }
         }
         // Adjust timing information on hits depending on BX and set overlay flag
-        if ((std::fabs(time_offset) < std::numeric_limits<float>::epsilon()) || !TPC_hits)
+        for (int k = number_of_elements - 1; k >= 0; --k)
         {
-          for (int k = number_of_elements - 1; k >= 0; --k)
+          SimTrackerHitImpl *TrackerHit = static_cast<SimTrackerHitImpl *>(source_collection->getElementAt(k));
+
+          TrackerHit->setOverlay(true);
+
+          const float _time_of_flight = time_of_flight(TrackerHit->getPosition()[0], TrackerHit->getPosition()[1], TrackerHit->getPosition()[2]);
+
+          if (((TrackerHit->getTime() + time_offset) > (this_start + _time_of_flight)) && ((TrackerHit->getTime() + time_offset) < (this_stop + _time_of_flight)))
           {
-            SimTrackerHitImpl *TrackerHit = static_cast<SimTrackerHitImpl *>(source_collection->getElementAt(k));
-
-            TrackerHit->setOverlay(true);
-
-            const float _time_of_flight = time_of_flight(TrackerHit->getPosition()[0], TrackerHit->getPosition()[1], TrackerHit->getPosition()[2]);
-
-            if (((TrackerHit->getTime() + time_offset) > (this_start + _time_of_flight)) && ((TrackerHit->getTime() + time_offset) < (this_stop + _time_of_flight)))
-            {
-              TrackerHit->setTime(TrackerHit->getTime() + time_offset);
-              dest_collection->addElement(TrackerHit);
-              source_collection->removeElementAt(k);
-            }
+            TrackerHit->setTime(TrackerHit->getTime() + time_offset);
+            dest_collection->addElement(TrackerHit);
+            source_collection->removeElementAt(k);
           }
         }
       }
