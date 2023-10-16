@@ -199,7 +199,7 @@ namespace overlay
     }
 
     // Make sure we have filenames to open and that we really want to overlay something
-    if ((_NOverlay > 0.) && (overlay_Evt == nullptr) && (_inputFileNamesMuPlus.size() > 0) && (_inputFileNamesMuMinus.size() > 0))
+    if ((_NOverlay > 0.) && (_inputFileNamesMuPlus.size() > 0) && (_inputFileNamesMuMinus.size() > 0))
     {
 
       std::vector<int> v_file_indices_mupl(_inputFileNamesMuPlus.size());           // vector of indices
@@ -312,7 +312,7 @@ namespace overlay
             merge_collections(Collection_in_overlay_Evt, Collection_in_Physics_Evt, 0.);
           }
         }
-        // overlay_Eventfile_reader->close();
+        overlay_Eventfile_reader->close();
       }
 
       // Do the same for mu minus
@@ -390,7 +390,7 @@ namespace overlay
             merge_collections(Collection_in_overlay_Evt, Collection_in_Physics_Evt, 0.);
           }
         }
-        // overlay_Eventfile_reader->close();
+        overlay_Eventfile_reader->close();
       }
     } // If we have any files, and more than 0 events to overlay end
     else
