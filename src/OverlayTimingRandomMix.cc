@@ -1,8 +1,5 @@
 #include "OverlayTimingRandomMix.h"
 
-#include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/RandPoisson.h"
-
 #include <EVENT/LCCollection.h>
 #include <EVENT/MCParticle.h>
 #include <EVENT/ReconstructedParticle.h>
@@ -101,14 +98,12 @@ namespace overlay
 
   void OverlayTimingRandomMix::init()
   {
+    streamlog_out(DEBUG) << " init called  " << std::endl;
     printParameters();
 
     overlay_Eventfile_reader = LCFactory::getInstance()->createLCReader();
 
     marlin::Global::EVENTSEEDER->registerProcessor(this);
-
-    _nRun = 0;
-    _nEvt = 0;
 
     // parse the collectionTimesVec vector to get the collections and integration times
     std::string key;
@@ -142,7 +137,7 @@ namespace overlay
       }
     }
 
-    // Getting the list of files from the paths
+    // Get the list of files from the paths
     listFilesInFolder(_pathToMuMinus, _inputFileNamesMuMinus);
     listFilesInFolder(_pathToMuPlus, _inputFileNamesMuPlus);
 
@@ -158,6 +153,9 @@ namespace overlay
     {
       streamlog_out(MESSAGE) << "  " << entry.first << ": " << entry.second.first << " -> " << entry.second.second << std::endl;
     }
+
+    _nRun = 0;
+    _nEvt = 0;
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
@@ -171,8 +169,6 @@ namespace overlay
 
   void OverlayTimingRandomMix::modifyEvent(EVENT::LCEvent *evt)
   {
-
-    CLHEP::HepRandom::setTheSeed(Global::EVENTSEEDER->getSeed(this));
 
     std::random_device rd;
     std::mt19937 g(rd());
@@ -316,7 +312,7 @@ namespace overlay
             merge_collections(Collection_in_overlay_Evt, Collection_in_Physics_Evt, 0.);
           }
         }
-        overlay_Eventfile_reader->close();
+        // overlay_Eventfile_reader->close();
       }
 
       // Do the same for mu minus
@@ -394,10 +390,13 @@ namespace overlay
             merge_collections(Collection_in_overlay_Evt, Collection_in_Physics_Evt, 0.);
           }
         }
-        overlay_Eventfile_reader->close();
+        // overlay_Eventfile_reader->close();
       }
-
     } // If we have any files, and more than 0 events to overlay end
+    else
+    {
+      streamlog_out(DEBUG) << "Nothing to overlay " << std::endl;
+    }
 
     ++_nEvt;
     // we clear the map of calorimeter hits for the next event
