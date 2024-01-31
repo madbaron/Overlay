@@ -242,6 +242,11 @@ namespace overlay {
                                _OTE_int,
                                float(10));
 
+    registerProcessorParameter("Start_Integration_Time",
+                               "Starting integration time.  Should be shortly before the BX, but may need to be shifted earlier if the vertex is smeared in time.",
+                               _DefaultStart_int,
+                               float(-0.25));
+
     registerProcessorParameter("AllowReusingBackgroundFiles",
                                "If true the same background file can be used for the same event",
                                m_allowReusingBackgroundFiles,
@@ -561,8 +566,7 @@ namespace overlay {
 
   void OverlayTiming::define_time_windows(const std::string &Collection_name)
   {
-    this_start = -0.25; //the integration time shall start shortly before the BX with the physics event to avoid timing problems
-                        //the value of -0.25 is a arbitrary number for the moment but should be sufficient -- corresponds to 7.5cm of flight at c
+    this_start = _DefaultStart_int;
 
     this_stop = std::numeric_limits<float>::max(); // provide default values for collections not named below;
     TPC_hits = false;
@@ -713,6 +717,7 @@ namespace overlay {
               {
                 MCParticleImpl *MC_Part = static_cast<MCParticleImpl*>(source_collection->getElementAt(i));
                 MC_Part->setTime(MC_Part->getTime() + time_offset);
+                MC_Part->setOverlay(true);
                 dest_collection->addElement(MC_Part);
                 source_collection->removeElementAt(i);
               }
@@ -746,6 +751,7 @@ namespace overlay {
                 if (((TrackerHit->getTime() + time_offset) > (this_start + _time_of_flight)) && ((TrackerHit->getTime() + time_offset) < (this_stop + _time_of_flight)))
                   {
                     TrackerHit->setTime( TrackerHit->getTime() + time_offset);
+                    TrackerHit->setOverlay(true);
                     dest_collection->addElement(TrackerHit);
                     source_collection->removeElementAt(k);
                   }
@@ -771,6 +777,7 @@ namespace overlay {
                         ort[2] = TrackerHit->getPosition()[2] + time_offset * _tpcVdrift_mm_ns;
                       }
                     TrackerHit->setPosition(ort);
+                    TrackerHit->setOverlay(true);
                     dest_collection->addElement(TrackerHit);
                     source_collection->removeElementAt(k);
                   }
