@@ -582,6 +582,7 @@ namespace overlay
 
   void OverlayTiming::define_time_windows(const std::string &Collection_name)
   {
+
     this_start = _DefaultStart_int;
 
     this_stop = std::numeric_limits<float>::max(); // provide default values for collections not named below;
