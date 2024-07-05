@@ -96,6 +96,10 @@ OverlayTimingGeneric::OverlayTimingGeneric(): OverlayTiming("OverlayTimingGeneri
                             m_startWithBackgroundEvent,
                             m_startWithBackgroundEvent);
 
+    registerProcessorParameter("Start_Integration_Time",
+                               "Starting integration time.  Should be shortly before the BX, but may need to be shifted earlier if the vertex is smeared in time.",
+                               _DefaultStart_int,
+                               float(-0.25));
 }
 
 void OverlayTimingGeneric::init()
