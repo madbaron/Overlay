@@ -143,9 +143,10 @@ namespace overlay
 
     if ((_NOverlay > _inputFileNamesMuPlus.size()) || (_NOverlay > _inputFileNamesMuMinus.size()))
     {
-      streamlog_out(WARNING) << "Attention! There are " << _inputFileNamesMuPlus.size() << " (" << _inputFileNamesMuMinus.size()
+      streamlog_out(ERROR) << "Attention! There are " << _inputFileNamesMuPlus.size() << " (" << _inputFileNamesMuMinus.size()
                              << ") files in the list of mu plus (minus) background files to overlay. Make sure that each background file list is equal or greater to NumberBackground!!"
                              << std::endl;
+      
     }
 
     streamlog_out(MESSAGE) << "Collection integration times:" << std::endl;
@@ -197,6 +198,9 @@ namespace overlay
         crop_collection(Collection_in_Physics_Evt);
       }
     }
+
+    streamlog_out(DEBUG) << "N mu plus files: " << _inputFileNamesMuPlus.size() << std::endl;
+    streamlog_out(DEBUG) << "N mu minus files: " << _inputFileNamesMuMinus.size() << std::endl;
 
     // Make sure we have filenames to open and that we really want to overlay something
     if ((_NOverlay > 0.) && (_inputFileNamesMuPlus.size() > 0) && (_inputFileNamesMuMinus.size() > 0))
@@ -467,7 +471,7 @@ namespace overlay
             if (!((CalorimeterHit->getTimeCont(j) > (this_start + _time_of_flight)) && (CalorimeterHit->getTimeCont(j) < (this_stop + _time_of_flight))))
             {
               ++not_within_time_window;
-              // std::cout << " calo hit : " << j << " Time : " << CalorimeterHit->getTimeCont(j) << " ?> " << this_start + _time_of_flight << " ?< " << this_stop + _time_of_flight << std::endl;
+              // streamlog_out(DEBUG) << " calo hit : " << j << " Time : " << CalorimeterHit->getTimeCont(j) << " ?> " << this_start + _time_of_flight << " ?< " << this_stop + _time_of_flight << std::endl;
             }
           }
 
