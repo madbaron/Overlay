@@ -407,6 +407,10 @@ namespace overlay
     {
       streamlog_out(DEBUG) << "Collection " << collection_names_in_evt->at(i) << " has now " << evt->getCollection(collection_names_in_evt->at(i))->getNumberOfElements() << " elements" << std::endl;
     }
+
+    // reset pointer
+    overlay_Evt = nullptr;
+
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
