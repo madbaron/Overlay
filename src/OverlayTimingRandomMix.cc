@@ -209,7 +209,7 @@ namespace overlay
       for (int k = 0; k < _NOverlay; ++k)
       {
         overlay_Eventfile_reader->open(_inputFileNamesMuPlus.at(v_file_indices_mupl[k]));
-        streamlog_out(MESSAGE) << "Open mu plus background file: " << _inputFileNamesMuPlus.at(v_file_indices_mupl[k]) << std::endl;
+        streamlog_out(MESSAGE) << "Open mu plus background file [" << k << "/" << _NOverlay << "]: " << _inputFileNamesMuPlus.at(v_file_indices_mupl[k]) << std::endl;
 
         overlay_Evt = overlay_Eventfile_reader->readNextEvent(LCIO::UPDATE);
 
@@ -323,7 +323,7 @@ namespace overlay
       for (int k = 0; k < _NOverlay; ++k)
       {
         overlay_Eventfile_reader->open(_inputFileNamesMuMinus.at(v_file_indices_mumi[k]));
-        streamlog_out(MESSAGE) << "Open mu minus background file: " << _inputFileNamesMuMinus.at(v_file_indices_mumi[k]) << std::endl;
+        streamlog_out(MESSAGE) << "Open mu minus background file [" << k << "/" << _NOverlay << "]: " << _inputFileNamesMuMinus.at(v_file_indices_mumi[k]) << std::endl;
 
         overlay_Evt = overlay_Eventfile_reader->readNextEvent(LCIO::UPDATE);
 
